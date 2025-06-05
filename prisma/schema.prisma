@@ -13,20 +13,12 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  bookings      Booking[]
   accounts      Account[]
   sessions      Session[]
+  bookings      Booking[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
-
-// model User {
-//   id        String    @id @default(uuid())
-//   email     String
-//   name      String
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
-// }
 
 model Account {
   userId            String
@@ -67,7 +59,7 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-model BarberShop {
+model Barbershop {
   id          String              @id @default(uuid())
   name        String
   address     String
@@ -76,29 +68,38 @@ model BarberShop {
   imageUrl    String
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
-  services    BarberShopService[]
+  services    BarbershopService[]
+  availableTimes AvailableTime[]
 }
 
-model BarberShopService {
+model BarbershopService {
   id           String     @id @default(uuid())
-  barberShopId String
   name         String
   description  String
   imageUrl     String
   price        Decimal    @db.Decimal(10, 2)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  barbershop   BarberShop @relation(fields: [barberShopId], references: [id])
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
   bookings     Booking[]
 }
 
 model Booking {
-  id                  String            @id @default(uuid())
-  userId              String
-  barberShopServiceId String
-  date                DateTime
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  barberServie        BarberShopService @relation(fields: [barberShopServiceId], references: [id])
-  user                User              @relation(fields: [userId], references: [id])
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  serviceId String
+  service   BarbershopService @relation(fields: [serviceId], references: [id])
+  date      DateTime
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model AvailableTime {
+  id           String     @id @default(uuid())
+  startTime     String     // formato "08:00"
+  endTime      String     // formato "18:00"
+  dayOfWeek    Int        // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado  
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  active       Boolean    @default(true)
 }
